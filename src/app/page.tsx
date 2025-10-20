@@ -18,7 +18,7 @@ const page = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md text-center">
         <div className="h-16 rounded-full flex items-center justify-center">
-              {/* <img src={logo} alt="Company Logo" className='h-14 rounded-full object-cover'/> */}
+              <img src='/logo.jpg' alt="Company Logo" className='h-14 rounded-full object-cover'/>
             </div>
         <h2 className="text-3xl  text-gray-900 mb-6 font-light">Welcome to Optimum Logistics</h2>
         <p className="text-gray-600 mb-8 font-light">Please select your role to proceed to login:</p>
