@@ -30,7 +30,7 @@ const Page = () => {
         }`}
       >
         <Header toggleSidebar={toggleSidebar} />
-        <main className="flex-1 py-6  overflow-y-auto">
+        <main className="flex-1 py-6 px-3 overflow-y-auto">
           <CustomerSettings />
         </main>
       </div>

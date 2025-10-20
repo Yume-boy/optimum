@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   Package,
   DollarSign,
@@ -7,14 +7,31 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  X
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useFetchResourceQuery } from '@/redux/api/crudApi';
+
+
+interface Order {
+  id: string
+  status: string
+  pickup_address: string
+  delivery_address: string
+  amount: number
+  user: {
+    fullname:string,
+    email:string,
+    phone:string
+  }
+}
 
 const DriverDashboard: React.FC = () => {
   // Dummy driver stats
   const driverStats = [
     {
       title: "Today's Earnings",
-      value: '$125.50',
+      value: '₦125.50',
       change: '+15%',
       icon: DollarSign,
       color: 'bg-emerald-500',
@@ -42,47 +59,14 @@ const DriverDashboard: React.FC = () => {
     },
   ];
 
-  // Dummy orders data
-  const orders = [
-    {
-      id: '101',
-      driverId: '1',
-      pickupAddress: 'Warehouse A, Lagos',
-      deliveryAddress: 'Customer B, Ikeja',
-      category: 'Electronics',
-      totalAmount: 45.5,
-      status: 'delivered',
-    },
-    {
-      id: '102',
-      driverId: '1',
-      pickupAddress: 'Cold Storage, VI',
-      deliveryAddress: 'Restaurant C, Lekki',
-      category: 'Groceries',
-      totalAmount: 32.75,
-      status: 'in_transit',
-    },
-    {
-      id: '103',
-      driverId: '1',
-      pickupAddress: 'Office D, Surulere',
-      deliveryAddress: 'Shop E, Yaba',
-      category: 'Documents',
-      totalAmount: 20.0,
-      status: 'pending',
-    },
-    {
-      id: '104',
-      driverId: '2',
-      pickupAddress: 'Warehouse Z, Abuja',
-      deliveryAddress: 'Mall F, Wuse',
-      category: 'Furniture',
-      totalAmount: 150.0,
-      status: 'delivered',
-    },
-  ];
 
-  const todayOrders = orders.filter((order) => order.driverId === '1').slice(0, 3);
+
+  const router = useRouter()
+  const {data, isLoading, isError} = useFetchResourceQuery('/orders/all')
+  const {data:lol, isLoading:olo, isError:lkkl} = useFetchResourceQuery('/deliveries/all')
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+
+  const order = data?.data
 
   return (
     <div className="space-y-6">
@@ -132,7 +116,7 @@ const DriverDashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Today's Orders</h3>
           <div className="space-y-4">
-            {todayOrders.map((order) => (
+            {order?.slice(-3).map((order:any) => (
               <div key={order.id} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-medium text-gray-900">Order #{order.id}</h4>
@@ -152,25 +136,29 @@ const DriverDashboard: React.FC = () => {
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex items-center space-x-2">
                     <MapPin className="h-4 w-4" />
-                    <span>From: {order.pickupAddress}</span>
+                    <span>From: {order.pickup_address}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <MapPin className="h-4 w-4" />
-                    <span>To: {order.deliveryAddress}</span>
+                    <span>To: {order.delivery_address}</span>
                   </div>
                   <div className="flex items-center justify-between pt-2">
-                    <span className="font-medium">{order.category}</span>
+                    {/* <span className="font-medium">{order.category}</span> */}
                     <span className="font-medium text-gray-900">
-                      ${order.totalAmount}
+                      ₦{order.amount}
                     </span>
                   </div>
                 </div>
 
                 <div className="mt-4 flex space-x-2">
-                  <button className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700">
+                  <button
+                  onClick={() => router.push('/driver/routeMap')}
+                  className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700">
                     View Route
                   </button>
-                  <button className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200">
+                  <button
+                  onClick={() => setSelectedOrder(order)}
+                   className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200">
                     Contact Customer
                   </button>
                 </div>
@@ -178,6 +166,57 @@ const DriverDashboard: React.FC = () => {
             ))}
           </div>
         </div>
+
+         {/* Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
+            <button
+              onClick={() => setSelectedOrder(null)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Contact Customer
+            </h3>
+
+            <div className="space-y-2 text-sm text-gray-700">
+              <p>
+                <strong>Order ID:</strong> #{selectedOrder.id}
+              </p>
+              <p>
+                <strong>Status:</strong> {selectedOrder.status}
+              </p>
+              <p>
+                <strong>Pickup:</strong> {selectedOrder.pickup_address}
+              </p>
+              <p>
+                <strong>Delivery:</strong> {selectedOrder.delivery_address}
+              </p>
+              <p>
+                <strong>Amount:</strong> ₦{selectedOrder.amount}
+              </p>
+              {selectedOrder.user.fullname && (
+                <p>
+                  <strong>Customer:</strong> {selectedOrder.user.fullname}
+                </p>
+              )}
+              {selectedOrder.user.phone && (
+                <p>
+                  <strong>Phone:</strong> {selectedOrder.user.phone}
+                </p>
+              )}
+              {selectedOrder.user.email && (
+                <p>
+                  <strong>Email:</strong> {selectedOrder.user.email}
+                </p>
+              )}
+            </div>         
+          </div>
+        </div>
+      )}
 
         {/* Quick Actions */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
