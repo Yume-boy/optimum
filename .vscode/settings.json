@@ -1,0 +1,11 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#1f258b",
+        "activityBar.background": "#1f258b",
+        "editorGroup.border": "#1f258b",
+        "panel.border": "#1f258b",
+        "sash.hoverBorder": "#1f258b",
+        "sideBar.border": "#1f258b",
+        "tab.activeBorder": "#1f258b"
+    }
+}
