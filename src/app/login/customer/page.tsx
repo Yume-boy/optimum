@@ -56,7 +56,7 @@ const LoginForm = () => {
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <div className="h-16 rounded-full flex items-center justify-center">
-              {/* <img src={logo} alt="Company Logo" className='h-14 rounded-full object-cover'/> */}
+              <img src='/logo.jpg' alt="Company Logo" className='h-14 rounded-full object-cover'/>
             </div>
           </div>
           <h2 className="text-3xl font-bold text-gray-900">Welcome Back!</h2>

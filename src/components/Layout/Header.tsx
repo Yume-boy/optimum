@@ -33,7 +33,7 @@ const Header= ({ toggleSidebar }: { toggleSidebar: () => void }) => {
             <Menu className="h-5 w-5 text-gray-600" onClick={toggleSidebar}/>
           </button>
           {/* Using a placeholder for the logo for Canvas compatibility */}
-           {/* <img src={logo} alt="company logo"  className=' h-14'/> */}
+           <img src='/logo.jpg' alt="Company Logo" className='h-14 rounded-full object-cover'/>
         </div>
 
         <div className="flex items-center space-x-4">
