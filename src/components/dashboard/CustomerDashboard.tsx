@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Package,
   Clock,
@@ -8,38 +8,77 @@ import {
   Truck,
   MapPin,
   DollarSign,
+  X
 } from 'lucide-react';
 import { useFetchResourceQuery } from '@/redux/api/crudApi';
 import { useRouter } from 'next/navigation';
 
+interface Order {
+  id: string
+  status: string
+  pickup_address: string
+  delivery_address: string
+  amount: number
+  user: {
+    fullname:string,
+    email:string,
+    phone:string
+  }
+}
+
 const CustomerDashboard: React.FC = () => {
   const { data: dashboardData, isLoading: dashboardLoading, isError: dashboardError } =
-    useFetchResourceQuery('/dashboard');
+    useFetchResourceQuery('/orders/all');
   const router = useRouter();
+
+  let completed = 0;
+  let pending = 0;
+  let processing = 0;
+  let totalAmount = 0;
+
+  // Loop through data
+  dashboardData?.data.forEach((order:any) => {
+    if (order.status === "completed") completed++;
+    if (order.status === "pending") pending++;
+    if (order.status === "processing") processing++;
+    
+    // Add up amounts safely
+    totalAmount += parseFloat(order.amount || 0);
+  });
+  const total = completed + pending + processing
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+
+  console.log({
+    completed,
+    pending,
+    processing,
+    totalAmount: totalAmount.toFixed(2),
+    total
+  });
 
   // Dashboard statistics (dummy/fallback data)
   const stats = [
     {
       title: 'Total Orders',
-      value: dashboardData?.totalOrders ?? 10,
+      value: total,
       icon: Package,
       color: 'bg-blue-500',
     },
     {
       title: 'In Transit',
-      value: dashboardData?.inTransit ?? 20,
+      value: processing,
       icon: Truck,
       color: 'bg-orange-500',
     },
     {
       title: 'Delivered',
-      value: dashboardData?.delivered ?? 30,
+      value: completed,
       icon: CheckCircle,
       color: 'bg-emerald-500',
     },
     {
       title: 'Total Spent',
-      value: `₦${dashboardData?.totalSpent ?? 150}`,
+      value: `₦${totalAmount}`,
       icon: DollarSign,
       color: 'bg-purple-500',
     },
@@ -141,71 +180,107 @@ const CustomerDashboard: React.FC = () => {
           Recent Orders
         </h3>
         <div className="space-y-4">
-          {recentOrders.length > 0 ? (
-            recentOrders.map((order) => (
-              <div key={order.id} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-gray-900">
-                    Order #{order.id}
-                  </h4>
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      order.status === 'delivered'
-                        ? 'bg-green-100 text-green-800'
-                        : ['in_transit', 'processing', 'picked_up'].includes(
-                            order.status
-                          )
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}
-                  >
-                    {order.status.replace('_', ' ')}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4" />
-                      <span>From: {order.pickup_address}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4" />
-                      <span>To: {order.delivery_address}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Package className="h-4 w-4" />
-                      <span>
-                        {order.category} - {order.weight}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="h-4 w-4" />
-                      <span className="font-medium text-gray-900">
-                        ₦ {order.price ?? 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex space-x-2">
-                  <button className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700">
-                    Track Order
-                  </button>
-                  <button className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-500">No recent orders found.</p>
-          )}
+         {dashboardData?.data?.slice(-3).map((order:any) => (
+                       <div key={order.id} className="border border-gray-200 rounded-lg p-4">
+                         <div className="flex items-center justify-between mb-3">
+                           <h4 className="font-medium text-gray-900">Order #{order.id}</h4>
+                           <span
+                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                               order.status === 'delivered'
+                                 ? 'bg-green-100 text-green-800'
+                                 : order.status === 'processing'
+                                 ? 'bg-blue-100 text-blue-800'
+                                 : 'bg-yellow-100 text-yellow-800'
+                             }`}
+                           >
+                             {order.status == 'processing' ? 'In Transit': order.status == 'completed' ? 'Delivered' : 'Pending'}
+                           </span>
+                         </div>
+         
+                         <div className="space-y-2 text-sm text-gray-600">
+                           <div className="flex items-center space-x-2">
+                             <MapPin className="h-4 w-4" />
+                             <span>From: {order.pickup_address}</span>
+                           </div>
+                           <div className="flex items-center space-x-2">
+                             <MapPin className="h-4 w-4" />
+                             <span>To: {order.delivery_address}</span>
+                           </div>
+                           <div className="flex items-center justify-between pt-2">
+                             {/* <span className="font-medium">{order.category}</span> */}
+                             <span className="font-medium text-gray-900">
+                               ₦{order.amount}
+                             </span>
+                           </div>
+                         </div>
+         
+                         <div className="mt-4 flex space-x-2">
+                           <button
+                           onClick={() => router.push('/driver/routeMap')}
+                           className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700">
+                             Track
+                           </button>
+                           <button
+                           onClick={() => setSelectedOrder(order)}
+                            className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200">
+                             View details
+                           </button>
+                         </div>
+                       </div>
+                     ))}
         </div>
       </div>
+
+               {/* Modal */}
+            {selectedOrder && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
+                  <button
+                    onClick={() => setSelectedOrder(null)}
+                    className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+                  >
+                    <X size={20} />
+                  </button>
+      
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Contact Customer
+                  </h3>
+      
+                  <div className="space-y-2 text-sm text-gray-700">
+                    <p>
+                      <strong>Order ID:</strong> #{selectedOrder.id}
+                    </p>
+                    <p>
+                      <strong>Status:</strong> {selectedOrder.status}
+                    </p>
+                    <p>
+                      <strong>Pickup:</strong> {selectedOrder.pickup_address}
+                    </p>
+                    <p>
+                      <strong>Delivery:</strong> {selectedOrder.delivery_address}
+                    </p>
+                    <p>
+                      <strong>Amount:</strong> ₦{selectedOrder.amount}
+                    </p>
+                    {/* {selectedOrder.user.fullname && (
+                      <p>
+                        <strong>Customer:</strong> {selectedOrder.user.fullname}
+                      </p>
+                    )}
+                    {selectedOrder.user.phone && (
+                      <p>
+                        <strong>Phone:</strong> {selectedOrder.user.phone}
+                      </p>
+                    )}
+                    {selectedOrder.user.email && (
+                      <p>
+                        <strong>Email:</strong> {selectedOrder.user.email}
+                      </p>
+                    )} */}
+                  </div>         
+                </div>
+              </div>
+            )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -240,7 +315,7 @@ const CustomerDashboard: React.FC = () => {
         </div>
 
         {/* Schedule Delivery */}
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-6 rounded-lg text-white">
+        {/* <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-6 rounded-lg text-white">
           <Clock className="h-8 w-8 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Schedule Delivery</h3>
           <p className="text-purple-100 mb-4">
@@ -252,7 +327,7 @@ const CustomerDashboard: React.FC = () => {
           >
             Schedule
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

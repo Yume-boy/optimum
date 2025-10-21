@@ -40,8 +40,8 @@ const LoginForm = () => {
         sessionStorage.setItem('vehicle_type', response?.message.vehicle_type)
         sessionStorage.setItem('vehicle_no', response?.message.vehicle_no)
         sessionStorage.setItem('license_no', response?.message.license_no)
-        sessionStorage.setItem('token', response.token)
-        sessionStorage.setItem('role', response.role)
+        sessionStorage.setItem('token', response?.token)
+        sessionStorage.setItem('role', response?.role ? response.role : response.message.role)
         sessionStorage.setItem('phone', response?.message.phone)
         goTo('/driver/dashboard')
 

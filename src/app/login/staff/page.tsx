@@ -58,7 +58,7 @@ const LoginForm = () => {
         sessionStorage.setItem('user', response?.message.fullname)
         sessionStorage.setItem('email', response?.message.email)
         sessionStorage.setItem('token', response.token)
-        sessionStorage.setItem('role', response.role)
+        sessionStorage.setItem('role', response.role? response.role : response.message.role)
         sessionStorage.setItem('phone', response?.message.phone)
         sessionStorage.setItem('user_id', response?.message.id)
         

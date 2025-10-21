@@ -142,7 +142,7 @@ const OrderManagement: React.FC = () => {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'processing': return 'bg-blue-100 text-blue-800';
       case 'picked_up': return 'bg-orange-100 text-orange-800'; 
-      case 'delivered': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-green-100 text-green-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -212,9 +212,9 @@ const OrderManagement: React.FC = () => {
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
                 <option value="processing">Processing</option>
-                <option value="picked_up">Picked Up</option>
-                <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
+                {/* <option value="picked_up">Picked Up</option> */}
+                <option value="completed">Delivered</option>
+                {/* <option value="cancelled">Cancelled</option> */}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                 <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -231,6 +231,7 @@ const OrderManagement: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 w-full">
         {/* **Desktop Table View** */}
         <div className="hidden md:block overflow-x-auto">
+          <div className='min w-[600px] lg:min-w-full'>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -239,7 +240,7 @@ const OrderManagement: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Route</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> {/* Added Status column for completeness */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th> */}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -277,7 +278,7 @@ const OrderManagement: React.FC = () => {
                     <span 
                       className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}
                     >
-                      {order.status ? order.status.replace(/_/g, ' ') : 'N/A'}
+                      {order.status == 'processing' ? 'In Transit': order.status == 'completed' ? 'Delivered' : 'Pending'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -285,7 +286,7 @@ const OrderManagement: React.FC = () => {
                       ₦{order.amount || "N/A"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleEditOrder(order)}
@@ -302,11 +303,12 @@ const OrderManagement: React.FC = () => {
                         <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* **Mobile Card View** */}
@@ -322,7 +324,7 @@ const OrderManagement: React.FC = () => {
                 <span 
                   className={`px-3 py-1 text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}
                 >
-                  {order.status ? order.status.replace(/_/g, ' ') : 'N/A'}
+                  {order.status == 'processing' ? 'In Transit': order.status == 'completed' ? 'Delivered' : 'Pending'}
                 </span>
               </div>
               
@@ -345,7 +347,7 @@ const OrderManagement: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex space-x-4 pt-2 border-t border-gray-100 mt-3">
+              {/* <div className="flex space-x-4 pt-2 border-t border-gray-100 mt-3">
                 <button
                   onClick={() => handleEditOrder(order)}
                   className="flex items-center text-blue-600 hover:text-blue-900 text-sm font-medium transition"
@@ -360,7 +362,7 @@ const OrderManagement: React.FC = () => {
                 >
                   <Trash2 className="h-4 w-4 mr-1" /> Delete
                 </button>
-              </div>
+              </div> */}
             </div>
           ))}
           {filteredOrders?.length === 0 && (
@@ -402,7 +404,7 @@ const OrderManagement: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Delivered</p>
               <p className="text-2xl font-bold text-gray-900">
-                {orders?.data?.filter((o:any) => o.status === 'delivered').length}
+                {orders?.data?.filter((o:any) => o.status === 'completed').length}
               </p>
             </div>
           </div>

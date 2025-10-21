@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react'
 import Sidebar from '@/components/Layout/Sidebar'
 import Header from '@/components/Layout/Header'
-import TrackingMap from '@/components/tracking/TrackingMap'
+import CustomersOrders from '@/components/orders/CustomerOrders'
+import DeliveryManagement from '@/components/orders/CustomerDeliveries'
 
 const Page = () => {
   const [isSidebarHidden, setIsSidebarHidden] = useState(true)
@@ -30,9 +31,7 @@ const Page = () => {
       >
         <Header toggleSidebar={toggleSidebar} />
         <main className="flex-1 py-6 px-3 overflow-y-auto">
-           <div className='p-4 text-gray-700'>
-                Feature Coming Soon...
-            </div>
+           <DeliveryManagement />
         </main>
       </div>
     </div>

@@ -56,9 +56,7 @@ const DriverManagement: React.FC = () => {
 
   // Filtering drivers
   const filteredDrivers = customers?.customer.data.filter((driver:any) =>
-    driver.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.vehicle_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.vehicle_no.toLowerCase().includes(searchTerm.toLowerCase())
+    driver.fullname.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const selected = customers?.customer.data.find((driver:any) => driver.id === selectedDriver);
@@ -97,14 +95,14 @@ const DriverManagement: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search drivers..."
+              placeholder="Search customer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
           </div>
           <div className="text-sm text-gray-600">
-            {filteredDrivers?.length} drivers found
+            {filteredDrivers?.length} customers found
           </div>
         </div>
       </div>
@@ -193,7 +191,7 @@ const DriverManagement: React.FC = () => {
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center text-gray-500">
-              <Truck className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <User2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
               <p>Select a customer to view details</p>
             </div>
           )}

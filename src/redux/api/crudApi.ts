@@ -34,6 +34,13 @@ const crudApi = createApi({
         body: data,
       }),
     }),
+    editStatusResource: builder.mutation({
+      query: (url) => ({
+        url,
+        method: 'PUT',
+        body: 7
+      }),
+    }),
     patchResource: builder.mutation({
       query: ({ url, data }) => ({
         url,
@@ -55,6 +62,7 @@ export const {
   useDeleteResourceMutation, 
   useCreateResourceMutation,
   usePatchResourceMutation, 
-  useEditResourceMutation} = crudApi;
+  useEditResourceMutation,
+  useEditStatusResourceMutation} = crudApi;
 
   export default crudApi

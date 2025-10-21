@@ -157,7 +157,7 @@ const DriverSettings: React.FC = () => {
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
+          <nav className="hidden md:flex space-x-8 px-6">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -176,7 +176,23 @@ const DriverSettings: React.FC = () => {
               );
             })}
           </nav>
+
+           {/* Mobile Select Dropdown */}
+          <div className="md:hidden px-4 py-2">
+            <select
+              value={activeTab}
+              onChange={(e) => setActiveTab(e.target.value)}
+              className="block w-full rounded-md border-gray-300 text-gray-700 focus:ring-emerald-500 focus:border-emerald-500"
+            >
+              {tabs.map((tab) => (
+                <option key={tab.id} value={tab.id}>
+                  {tab.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+        
 
         <div className="p-6">
           {activeTab === 'profile' && (

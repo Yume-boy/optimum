@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { Package, User, MapPin, DollarSign, Clock, Search, Filter, Plus, Edit, Trash2, X } from 'lucide-react'; // Added 'X' for modal close
-import { useFetchResourceQuery, useCreateResourceMutation, useEditStatusResourceMutation } from '@/redux/api/crudApi';
+import { useFetchResourceQuery, useEditResourceMutation } from '@/redux/api/crudApi';
 import { useRouter } from 'next/navigation';
 
 
@@ -27,7 +27,7 @@ interface NewOrderPayload {
     category?: string;
     weight?: string;
     quantity?: number;
-    description?: string;
+    special_instruction?: string;
     delivery_type?: string;
     recipient_id?: string;
     amount: number;
@@ -35,11 +35,10 @@ interface NewOrderPayload {
     driver_id?: string | null;
 }
 
-const OrderManagement: React.FC = () => {
+const DeliveryManagement: React.FC = () => {
 
   const {data: orders, isLoading: ordersLoading, isError: ordersError} = useFetchResourceQuery('/orders/all')
-  const [createOrder, {isLoading}] = useCreateResourceMutation()
-  const [editOrder, {isLoading:editLoading}] = useEditStatusResourceMutation()
+  const [createOrder, {isLoading}] = useEditResourceMutation()
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -93,7 +92,7 @@ const OrderManagement: React.FC = () => {
     setShowCreateOrderModal(false);
     setNewOrderData({ // Reset form - Using the original reset logic (assuming these fields were meant to be in the original state)
         driver_id: null, status: 'pending', pickup_address: '', delivery_address: '',
-        category: '', weight: '', quantity: 0, description : '', delivery_type: '', recipient_id: '', amount: 0,
+        category: '', weight: '', quantity: 0, special_instruction: '', delivery_type: '', recipient_id: '', amount: 0,
     } as any); // Cast to any to match the slightly inconsistent original reset
   };
 
@@ -127,7 +126,7 @@ const OrderManagement: React.FC = () => {
     setEditingOrder(null); // Clear editing state
     setNewOrderData({ // Reset form
       user_id: 0, driver_id: null, status: 'pending', pickup_address: '', delivery_address: '',
-      category: '', weight: '', quantity: 0, description : '', delivery_type: '', recipient_id: '', amount: 0,
+      category: '', weight: '', quantity: 0, special_instruction: '', delivery_type: '', recipient_id: '', amount: 0,
     } as any);
   };
 
@@ -137,16 +136,19 @@ const OrderManagement: React.FC = () => {
     }
   };
 
-    const markedAsdelivered = async (id:any) => {
-      try {
-        await editOrder(`/staff/intransit/${id}`).unwrap()
-        alert('Status updated successfully')
-        router.refresh()
-      } catch(err){
-          alert('Something went wrong')
-      console.log('something went wrong')
-      }
+  const markedAsdelivered = async (id:any) => {
+    try {
+      await createOrder({
+        data: id,
+        url: `/driver/delivered/${id}`
+      }).unwrap()
+      alert('Status updated successfully')
+      router.refresh()
+    } catch(err){
+        alert('Something went wrong')
+    console.log('something went wrong')
     }
+  }
 
   // Helper function from original commented code (reintroduced for status styling in mobile view)
   const getStatusColor = (status: string) => {
@@ -164,7 +166,7 @@ const OrderManagement: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
-        <p className="ml-4 text-gray-600">Loading orders and drivers...</p>
+        <p className="ml-4 text-gray-600">Loading deliveries...</p>
       </div>
     );
   }
@@ -181,8 +183,8 @@ const OrderManagement: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6"> {/* Added padding for small screens */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-        <h1 className="text-2xl font-bold text-gray-900">Order Management</h1>
-        <button 
+        <h1 className="text-2xl font-bold text-gray-900">Deliveries</h1>
+        {/* <button 
           onClick={() => {
             setEditingOrder(null); // Clear editing state
             setNewOrderData({ // Reset form for new order (using original reset logic)
@@ -195,7 +197,7 @@ const OrderManagement: React.FC = () => {
         >
           <Plus className="h-5 w-5" />
           <span>Create Order</span>
-        </button>
+        </button> */}
       </div>
 
       {/* Filters */}
@@ -223,10 +225,8 @@ const OrderManagement: React.FC = () => {
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
+                <option value="completed">Delivered</option>
                 <option value="processing">In Transit</option>
-                {/* <option value="picked_up">Picked Up</option> */}
-                <option value="delivered">Delivered</option>
-                {/* <option value="cancelled">Cancelled</option> */}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                 <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -299,28 +299,13 @@ const OrderManagement: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleEditOrder(order)}
-                        className="text-blue-600 hover:text-blue-900 transition"
-                        title="Edit Order"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteOrder(order.id)}
-                        className="text-red-600 hover:text-red-900 transition"
-                        title="Delete Order"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={()=> markedAsdelivered(order.id)}
-                        className={`flex space-x-4 pt-2 border-gray-100 hover:cursor-pointer  text-blue-400 ${order.status == 'processing' ? 'hidden' : ''}`}
-                      >
-                      Mark as In transit
-                      </button>
+                    <div className={`text-gray-500 ${order.status == 'processing' ? 'hidden' : ''}`}>
+                      No Action Available
+                    </div>
+                    <div 
+                      onClick={()=> markedAsdelivered(order.id)}
+                      className={`flex space-x-4 pt-2  ${order.status == 'pending'  || order.status == 'completed' ? 'hidden' : ''} hover:cursor-pointer border-gray-100 mt-3 text-blue-400`}>
+                      Mark as delivered
                     </div>
                   </td>
                 </tr>
@@ -366,27 +351,12 @@ const OrderManagement: React.FC = () => {
                 </div>
               </div>
 
+              
               <div 
                 onClick={()=> markedAsdelivered(order.id)}
-                className={`flex space-x-4 pt-2 border-t border-gray-100 mt-3 text-blue-400 ${order.status == 'processing' ? 'hidden' : ''}`}>
-                Mark as In transit
+                className={`flex space-x-4 pt-2 border-t  ${order.status == 'pending'  || order.status == 'completed' ? 'hidden' : ''} border-gray-100 mt-3 text-blue-400`}>
+                Mark as delivered
               </div>
-              <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleEditOrder(order)}
-                        className="text-blue-600 hover:text-blue-900 transition"
-                        title="Edit Order"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteOrder(order.id)}
-                        className="text-red-600 hover:text-red-900 transition"
-                        title="Delete Order"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
             </div>
           ))}
           {filteredOrders?.length === 0 && (
@@ -428,24 +398,24 @@ const OrderManagement: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Delivered</p>
               <p className="text-2xl font-bold text-gray-900">
-                {orders?.data?.filter((o:any) => o.status === 'delivered').length}
+                {orders?.data?.filter((o:any) => o.status === 'completed').length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        {/* <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <DollarSign className="h-8 w-8 text-purple-500 mr-3 flex-shrink-0" />
             <div>
               <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              {/* This calculation is rough but retains the original component's structure */}
+              This calculation is rough but retains the original component's structure
               <p className="text-2xl font-bold text-gray-900">
-                {/* ₦{(orders?.data?.reduce((sum: number, o: any) => sum + (o.amount || 0), 0) || 0).toFixed(2)} */}
+                ₦{(orders?.data?.reduce((sum: number, o: any) => sum + (o.amount || 0), 0) || 0).toFixed(2)}
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Create/Edit Order Modal */}
@@ -527,8 +497,8 @@ const OrderManagement: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Special Instruction</label>
                   <textarea
-                    value={newOrderData.description}
-                    onChange={(e) => setNewOrderData({ ...newOrderData, description: e.target.value })}
+                    value={newOrderData.special_instruction}
+                    onChange={(e) => setNewOrderData({ ...newOrderData, special_instruction: e.target.value })}
                     rows={2}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                     placeholder="e.g., Handle with care"
@@ -567,9 +537,22 @@ const OrderManagement: React.FC = () => {
                   />
                 </div>
                 
-                {editingOrder && (
-                  <div className="grid grid-cols-1 gap-4"> {/* Responsive Grid */}
-                    
+                {/* {editingOrder && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Status</label>
+                      <select
+                        value={newOrderData.status}
+                        // onChange={(e) => setNewOrderData({ ...newOrderData, status: e.target.value as Order['status'] })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="picked_up">Picked Up</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Assign Driver</label>
                       <select
@@ -578,13 +561,13 @@ const OrderManagement: React.FC = () => {
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="">No Driver Assigned</option>
-                        {/* {drivers.map(driver => (
+                        {drivers.map(driver => (
                           <option key={driver.id} value={driver.id}>{driver.name}</option>
-                        ))} */}
+                        ))}
                       </select>
                     </div>
                   </div>
-                )}
+                )} */}
 
                 <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
                   <button
@@ -610,4 +593,4 @@ const OrderManagement: React.FC = () => {
   );
 };
 
-export default OrderManagement;
+export default DeliveryManagement;
