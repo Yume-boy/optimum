@@ -25,7 +25,7 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
 
       if (!token) {
         // If there's no token and we are NOT on the login page, redirect.
-        if (pathname !== '/login/staff' && pathname !== '/login/customer' && pathname !== '/login/driver' && pathname !== '/staff/dashboard' && pathname !== '/signUp' && pathname !== '/' && pathname !== '/changePassword') {
+        if (pathname !== '/login/staff' && pathname !== '/login/customer' && pathname !== '/login/driver' && pathname !== '/staff/dashboard' && pathname !== '/signup/customer' && pathname !== '/' && pathname !== '/changePassword') {
           router.back();
         } else {
           setLoading(false);
